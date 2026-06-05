@@ -12,7 +12,7 @@ COPY --from=tailscale /usr/local/bin/tailscaled /usr/local/bin/tailscaled
 COPY --from=tailscale /usr/local/bin/containerboot /usr/local/bin/containerboot
 
 ARG TARGETARCH=amd64
-ARG OPENCLAW_VERSION=2026.3.11
+ARG OPENCLAW_VERSION=2026.6.1
 ARG S6_OVERLAY_VERSION=3.2.1.0
 ARG NODE_MAJOR=24
 ARG RESTIC_VERSION=0.17.3
@@ -119,7 +119,7 @@ RUN export SHELL=/bin/bash  && export NVM_DIR="$HOME/.nvm" \
   && npm install -g pnpm \
   && pnpm setup \
   && export PNPM_HOME="/home/openclaw/.local/share/pnpm" \
-  && export PATH="$PNPM_HOME:$PATH" \
+  && export PATH="$PNPM_HOME/bin:$PATH" \
   && pnpm add -g "openclaw@${OPENCLAW_VERSION}"
 
 # Switch back to root for final setup
