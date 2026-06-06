@@ -11,7 +11,7 @@ data:
   # NOTE: TAILSCALE_ENABLE and ENABLE_NGROK are mutually exclusive.
   ENABLE_NGROK: "false"
   TAILSCALE_ENABLE: "true"
-  ENABLE_SPACES: "false"
+  ENABLE_SPACES: "true"
   ENABLE_UI: "true"
   SSH_ENABLE: "false"
 
