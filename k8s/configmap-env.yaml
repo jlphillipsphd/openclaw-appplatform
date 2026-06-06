@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openclaw-env
+  namespace: openclaw
+data:
+  # ─── Identity ────────────────────────────────────────────────────────────────
+  STABLE_HOSTNAME: "openclaw"
+
+  # ─── Feature flags ───────────────────────────────────────────────────────────
+  # NOTE: TAILSCALE_ENABLE and ENABLE_NGROK are mutually exclusive.
+  ENABLE_NGROK: "false"
+  TAILSCALE_ENABLE: "true"
+  ENABLE_SPACES: "false"
+  ENABLE_UI: "true"
+  SSH_ENABLE: "false"
+
+  # ─── Tailscale (only used when TAILSCALE_ENABLE=true) ────────────────────────
+  # TS_AUTHKEY must be set in secret.yaml before deploying.
+  TS_HOSTNAME: "openclaw"
+  # Userspace networking: no NET_ADMIN capability or /dev/net/tun device required.
+  TS_USERSPACE: "true"
+  TS_SOCKET: "/tmp/tailscaled.sock"
+  # Persist Tailscale node identity to the PVC so the node keeps its IP across restarts.
+  TS_STATE_DIR: "/data/.tailscale"
+
+  # ─── Optional ────────────────────────────────────────────────────────────────
+  GITHUB_USERNAME: ""
+
+  # ─── Restic / Spaces (only used when ENABLE_SPACES=true) ─────────────────────
+  RESTIC_SPACES_ENDPOINT: "tor1.digitaloceanspaces.com"
+  RESTIC_SPACES_BUCKET: "openclaw-backup"

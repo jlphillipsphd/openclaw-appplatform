@@ -1,0 +1,130 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openclaw
+  namespace: openclaw
+  labels:
+    app: openclaw
+spec:
+  replicas: 1
+  # Recreate (not RollingUpdate): the PVC uses ReadWriteOnce and cannot be
+  # mounted by two pods simultaneously.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: openclaw
+  template:
+    metadata:
+      labels:
+        app: openclaw
+    spec:
+      # s6-overlay init must run as root; individual services inside the
+      # container drop to the 'openclaw' user as needed.
+      securityContext:
+        runAsUser: 0
+        runAsNonRoot: false
+
+      containers:
+        - name: openclaw
+          # TODO: replace with your actual image reference, e.g.:
+          #   ghcr.io/your-org/openclaw-appplatform:latest
+          image: REPLACE_ME
+          imagePullPolicy: Always
+
+          # Resources: 2 GiB RAM minimum — 1 GiB causes a Node.js heap overflow.
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu: "500m"
+            limits:
+              memory: "4Gi"
+              cpu: "2"
+
+          ports:
+            - name: gateway
+              containerPort: 18789
+              protocol: TCP
+
+          # ─── Environment: non-sensitive values ─────────────────────────────
+          envFrom:
+            - configMapRef:
+                name: openclaw-env
+
+          # ─── Environment: sensitive values ─────────────────────────────────
+          env:
+            - name: OPENCLAW_GATEWAY_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: openclaw-secrets
+                  key: OPENCLAW_GATEWAY_TOKEN
+                  optional: false
+            - name: NGROK_AUTHTOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: openclaw-secrets
+                  key: NGROK_AUTHTOKEN
+                  optional: true
+            - name: TS_AUTHKEY
+              valueFrom:
+                secretKeyRef:
+                  name: openclaw-secrets
+                  key: TS_AUTHKEY
+                  optional: true
+            - name: RESTIC_SPACES_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: openclaw-secrets
+                  key: RESTIC_SPACES_ACCESS_KEY_ID
+                  optional: true
+            - name: RESTIC_SPACES_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: openclaw-secrets
+                  key: RESTIC_SPACES_SECRET_ACCESS_KEY
+                  optional: true
+            - name: RESTIC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: openclaw-secrets
+                  key: RESTIC_PASSWORD
+                  optional: true
+            - name: GRADIENT_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: openclaw-secrets
+                  key: GRADIENT_API_KEY
+                  optional: true
+
+          volumeMounts:
+            # Persistent workspace and state (openclaw config, plugins, workspace files)
+            - name: openclaw-data
+              mountPath: /data
+            # Override the default openclaw gateway config to bind on all interfaces
+            # instead of loopback, enabling the Kubernetes Service to route traffic.
+            - name: openclaw-gateway-config
+              mountPath: /etc/openclaw/openclaw.default.json
+              subPath: openclaw.default.json
+
+          # TCP probe — gateway starts listening on 18789 only after s6 init completes.
+          # The generous failureThreshold gives s6-overlay and Node.js time to start up.
+          startupProbe:
+            tcpSocket:
+              port: gateway
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            failureThreshold: 30
+          readinessProbe:
+            tcpSocket:
+              port: gateway
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
+
+      volumes:
+        - name: openclaw-data
+          persistentVolumeClaim:
+            claimName: openclaw-data
+        - name: openclaw-gateway-config
+          configMap:
+            name: openclaw-gateway-config
