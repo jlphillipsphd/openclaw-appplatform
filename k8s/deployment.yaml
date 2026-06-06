@@ -95,6 +95,12 @@ spec:
                   name: openclaw-secrets
                   key: GRADIENT_API_KEY
                   optional: true
+            - name: MTSU_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: openclaw-secrets
+                  key: MTSU_API_KEY
+                  optional: true
 
           volumeMounts:
             # Persistent workspace and state (openclaw config, plugins, workspace files)
