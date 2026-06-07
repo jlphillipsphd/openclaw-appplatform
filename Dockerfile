@@ -120,9 +120,9 @@ RUN export SHELL=/bin/bash  && export NVM_DIR="$HOME/.nvm" \
   && npm install -g pnpm@${PNPM_VERSION} \
   && pnpm setup \
   && export PNPM_HOME="/home/openclaw/.local/share/pnpm" \
-  && export PATH="$PNPM_HOME/bin:$PATH" \
+  && export PATH="$PNPM_HOME:$PATH" \
   && pnpm add -g "openclaw@${OPENCLAW_VERSION}" \
-  && "$PNPM_HOME/bin/openclaw" --version
+  && "$PNPM_HOME/openclaw" --version
 
 # Switch back to root for final setup
 USER root

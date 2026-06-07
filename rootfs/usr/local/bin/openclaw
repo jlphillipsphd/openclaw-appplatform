@@ -13,8 +13,8 @@ if [ "$(id -un)" = "openclaw" ]; then
   export NVM_DIR="$HOME/.nvm"
   [ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
   export PNPM_HOME="$HOME/.local/share/pnpm"
-  export PATH="$PNPM_HOME/bin:$PATH"
-  exec "$PNPM_HOME/bin/openclaw" "$@"
+  export PATH="$PNPM_HOME:$PATH"
+  exec "$PNPM_HOME/openclaw" "$@"
 elif [ "$(id -u)" = "0" ]; then
   exec su - openclaw -c "openclaw$(printf ' %q' "$@")"
 else
