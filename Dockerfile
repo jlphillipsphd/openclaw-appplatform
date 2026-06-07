@@ -19,6 +19,7 @@ ARG RESTIC_VERSION=0.17.3
 ARG NGROK_VERSION=3
 ARG YQ_VERSION=4.44.3
 ARG NVM_VERSION=0.40.4
+ARG PNPM_VERSION=9
 ARG OPENCLAW_STATE_DIR=/data/.openclaw
 ARG OPENCLAW_WORKSPACE_DIR=/data/workspace
 
@@ -111,16 +112,17 @@ RUN NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.co
 
 # Install nvm, Node.js LTS, pnpm, and openclaw
 RUN export SHELL=/bin/bash  && export NVM_DIR="$HOME/.nvm" \
-  && curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash \
+  && curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v${NVM_VERSION}/install.sh | bash \
   && . "$NVM_DIR/nvm.sh" \
   && nvm install --lts \
   && nvm use --lts \
   && nvm alias default lts/* \
-  && npm install -g pnpm \
+  && npm install -g pnpm@${PNPM_VERSION} \
   && pnpm setup \
   && export PNPM_HOME="/home/openclaw/.local/share/pnpm" \
   && export PATH="$PNPM_HOME/bin:$PATH" \
-  && pnpm add -g "openclaw@${OPENCLAW_VERSION}"
+  && pnpm add -g "openclaw@${OPENCLAW_VERSION}" \
+  && "$PNPM_HOME/bin/openclaw" --version
 
 # Switch back to root for final setup
 USER root
