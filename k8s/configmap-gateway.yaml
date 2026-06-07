@@ -1,5 +1,5 @@
 # Overrides /etc/openclaw/openclaw.default.json inside the container.
-# The key change from the upstream default is "bind": "all" (was "loopback"),
+# The key change from the upstream default is "bind": "lan" (was "loopback"),
 # which is required for the Kubernetes Service to route traffic to the gateway.
 apiVersion: v1
 kind: ConfigMap
@@ -11,7 +11,7 @@ data:
     {
       "gateway": {
         "mode": "local",
-        "bind": "all",
+        "bind": "lan",
         "controlUi": {
           "allowInsecureAuth": true
         }

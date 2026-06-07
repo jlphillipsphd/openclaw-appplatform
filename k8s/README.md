@@ -9,7 +9,7 @@ Deploys the OpenClaw gateway container (built from the project `Dockerfile`) to 
 | `namespace.yaml` | Creates the `openclaw` namespace |
 | `secret.yaml` | Sensitive environment variables (API keys, tokens, passwords) |
 | `configmap-env.yaml` | Non-sensitive environment variables and feature flags |
-| `configmap-gateway.yaml` | Overrides the default openclaw gateway config (`openclaw.default.json`) mounted into the container. Sets `bind: all` so the gateway listens on all interfaces (required for the Kubernetes Service to route traffic), and defines model providers. |
+| `configmap-gateway.yaml` | Overrides the default openclaw gateway config (`openclaw.default.json`) mounted into the container. Sets `bind: lan` so the gateway listens on all interfaces (required for the Kubernetes Service to route traffic), and defines model providers. |
 | `pvc.yaml` | 10 GiB `ReadWriteOnce` PersistentVolumeClaim for `/data` — stores openclaw state, the user workspace, and Tailscale node identity |
 | `deployment.yaml` | Single-replica Deployment. Runs as root (required by the s6-overlay init system), uses a `Recreate` strategy (the RWO PVC cannot be mounted by two pods simultaneously), and enforces a 2 GiB memory minimum. |
 | `service.yaml` | `ClusterIP` Service exposing the gateway on port `18789` |
