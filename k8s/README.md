@@ -9,10 +9,9 @@ Deploys the OpenClaw gateway container (built from the project `Dockerfile`) to 
 | `namespace.yaml` | Creates the `openclaw` namespace |
 | `secret.yaml` | Sensitive environment variables (API keys, tokens, passwords) |
 | `configmap-env.yaml` | Non-sensitive environment variables and feature flags |
-| `configmap-gateway.yaml` | Overrides the default openclaw gateway config (`openclaw.default.json`) mounted into the container. Sets `bind: lan` so the gateway listens on all interfaces (required for the Kubernetes Service to route traffic), and defines model providers. |
+| `configmap-gateway.yaml` | Overrides the default openclaw gateway config (`openclaw.default.json`) mounted into the container. Keeps `bind: loopback` (gateway only listens on `127.0.0.1`) — Tailscale serve acts as the reverse proxy, accepting connections from your tailnet and forwarding them to localhost. Also defines model providers. |
 | `pvc.yaml` | 10 GiB `ReadWriteOnce` PersistentVolumeClaim for `/data` — stores openclaw state, the user workspace, and Tailscale node identity |
 | `deployment.yaml` | Single-replica Deployment. Runs as root (required by the s6-overlay init system), uses a `Recreate` strategy (the RWO PVC cannot be mounted by two pods simultaneously), and enforces a 2 GiB memory minimum. |
-| `service.yaml` | `ClusterIP` Service exposing the gateway on port `18789` |
 | `kustomization.yaml` | Kustomize root — apply all resources with a single command |
 
 ## Before You Deploy
@@ -82,13 +81,12 @@ Check that the pod starts up:
 kubectl -n openclaw get pods -w
 ```
 
-The startup probe gives the container up to ~5 minutes to initialise (Node.js and s6 services take a moment). Once the pod is `Running` and `Ready`, access the Control UI via port-forward:
+The startup probe gives the container up to ~5 minutes to initialise (Node.js and s6 services take a moment). Once the pod is `Running` and `Ready`, access the Control UI via Tailscale:
 
-```bash
-kubectl -n openclaw port-forward svc/openclaw 18789:18789
-```
+- Open `https://<hostname>.tailnet-name.ts.net` in your browser (where `<hostname>` is the value of `TS_HOSTNAME`, defaulting to `openclaw`)
+- Enter your `OPENCLAW_GATEWAY_TOKEN` when prompted
 
-Then open [http://localhost:18789](http://localhost:18789) in your browser and enter your `OPENCLAW_GATEWAY_TOKEN`.
+Tailscale serve acts as a reverse proxy on the tailnet, forwarding HTTPS traffic to the gateway on `localhost:18789`. No Kubernetes Service or port-forward is required.
 
 ## Updating Configuration
 

@@ -1,6 +1,5 @@
 # Overrides /etc/openclaw/openclaw.default.json inside the container.
-# The key change from the upstream default is "bind": "lan" (was "loopback"),
-# which is required for the Kubernetes Service to route traffic to the gateway.
+# The gateway bind stays "loopback" — Tailscale serve proxies from the tailnet to localhost:18789.
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -11,7 +10,7 @@ data:
     {
       "gateway": {
         "mode": "local",
-        "bind": "lan",
+        "bind": "loopback",
         "controlUi": {
           "allowInsecureAuth": true
         }
